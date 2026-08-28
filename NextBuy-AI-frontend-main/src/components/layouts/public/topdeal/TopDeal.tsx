@@ -1,0 +1,117 @@
+import React from 'react';
+import { Star, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { getProducts } from '@/services/product.service';
+import Image from 'next/image';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { IProduct } from '@/types/products.type';
+
+const TopDeal = async () => {
+  const data = await getProducts({
+    isFeatured: true,
+    limit: 10,
+  });
+  const isProducts: IProduct[] = data?.data?.data || [];
+
+  return (
+    <div className="w-full pb-10 bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto  md:px-0">
+        {/* Header Section */}
+        <div className="mb-6 sm:mb-8 flex items-center justify-between gap-4">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
+            Top Deals
+          </h2>
+
+          <Link
+            href="/products"
+            className="inline-flex shrink-0 items-center gap-1 text-sm sm:text-base font-semibold text-title hover:text-hover-text transition-colors group"
+          >
+            <span>View more</span>
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
+          {isProducts.slice(0, 5).map(product => {
+            const originalPrice = product.price;
+            const discount = product.discount || 0;
+
+            const finalPrice = discount
+              ? originalPrice - (originalPrice * discount) / 100
+              : originalPrice;
+
+            return (
+              <Link key={product.id} href={`/products/${product.slug}`}>
+                <div className="group bg-white rounded-xs shadow-md overflow-hidden cursor-pointer border border-gray-100 hover:border-primary-light transition-all duration-300">
+                  {/* Product Image */}
+                  <div className="relative h-56 overflow-hidden bg-gray-100">
+                    <AspectRatio
+                      ratio={1.268115942}
+                      className="overflow-hidden"
+                    >
+                      <Image
+                        src={product.thumbnail}
+                        alt={product.name}
+                        fill
+                        className="block size-full object-cover object-center"
+                      />
+                    </AspectRatio>
+
+                    {/* Discount Badge */}
+                    {product.discount && (
+                      <div className="absolute top-2 right-2 bg-chart-2 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        -{product.discount}%
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-4">
+                    {/* Title */}
+                    <h3 className="font-semibold text-gray-800 text-lg mb-1 line-clamp-1">
+                      {product.name}
+                    </h3>
+                    <p className="line-clamp-1">{product.description}</p>
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mb-3">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-semibold text-gray-700 ml-1">
+                          {product.rating}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        • 2k+ orders
+                      </span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="mb-3">
+                      <div className="flex items-baseline gap-2">
+                        {/* Final Price */}
+                        <span className="text-2xl font-bold ">
+                          ৳{finalPrice.toFixed(2)}
+                        </span>
+
+                        {/* Original Price (cut) */}
+                        {discount > 0 && (
+                          <span className="text-sm text-gray-400 line-through">
+                            ৳{originalPrice.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TopDeal;
